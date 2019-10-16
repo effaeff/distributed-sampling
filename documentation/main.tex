@@ -1,0 +1,117 @@
+%% 
+%% Copyright 2019 Elsevier Ltd
+%% 
+%% This file is part of the 'CAS Bundle'.
+%% --------------------------------------
+%% 
+%% It may be distributed under the conditions of the LaTeX Project Public
+%% License, either version 1.2 of this license or (at your option) any
+%% later version.  The latest version of this license is in
+%%    http://www.latex-project.org/lppl.txt
+%% and version 1.2 or later is part of all distributions of LaTeX
+%% version 1999/12/01 or later.
+%% 
+%% The list of all files belonging to the 'CAS Bundle' is
+%% given in the file `manifest.txt'.
+%% 
+%% Template article for cas-dc documentclass for 
+%% double column output.
+
+%\documentclass[a4paper,fleqn,longmktitle]{cas-dc}
+% \documentclass[a4paper,fleqn]{cas-sc}
+\documentclass[a4paper,fleqn]{cas-dc}
+
+% \usepackage[authoryear,longnamesfirst]{natbib}
+% \usepackage[authoryear]{natbib}
+\usepackage[numbers]{natbib}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{algorithmic}
+\usepackage{graphicx}
+\usepackage{textcomp}
+\usepackage{xcolor}
+\usepackage{float}
+\usepackage{hyperref}
+
+\usepackage{siunitx}
+\usepackage{todonotes}
+\usepackage{flafter}
+\interdisplaylinepenalty=2500
+\usepackage{microtype}
+\sisetup{range-phrase=\text{--}}
+\sisetup{range-units=single}
+\usepackage{booktabs} % For formal tables
+\usepackage{bm}
+\usepackage[linesnumbered,ruled]{algorithm2e}
+% Use the postscript times font!
+\usepackage{graphics}
+\usepackage{subcaption}
+
+%\usepackage[caption=false,font=footnotesize]{subfig}
+
+\usepackage{adjustbox}
+\usepackage{ntheorem}
+\newtheorem{definition}{Definition}
+
+\usepackage{multirow,fixltx2e}
+
+\usepackage{filecontents}
+\usepackage{makecell}
+
+%%%Author definitions
+% \def\tsc#1{\csdef{#1}{\textsc{\lowercase{#1}}\xspace}}
+% \tsc{WGM}
+% \tsc{QE}
+% \tsc{EP}
+% \tsc{PMS}
+% \tsc{BEC}
+% \tsc{DE}
+%%%
+
+\begin{document}
+\let\WriteBookmarks\relax
+\def\floatpagepagefraction{1}
+\def\textpagefraction{.001}
+\shorttitle{}
+\shortauthors{Finkeldey et~al.}
+
+\title [mode = title]{An algorithmic approach to determine sub-quantities of data sets of a desired distribution}                      
+% \tnotemark[1,2]
+
+% \tnotetext[1]{This document is the results of the research
+%    project funded by the National Science Foundation.}
+
+% \tnotetext[2]{The second title footnote which is a longer text matter
+%    to fill through the whole text width and overflow into
+%    another line in the footnotes area of the first page.}
+
+\author[1]{Felix Finkeldey}[]
+\cormark[1]
+\ead{felix.finkeldey@tu-dortmund.de}
+
+\address[1]{Virtual Machining, Chair for Software Engineering, TU Dortmund University, 44227 Dortmund, Germany}
+
+\author[1]{Jim Bergmann}[]
+\ead{jim.bergmann@tu-dortmund.de}
+
+\author[1]{Petra Wiederkehr}[]
+\ead{petra.wiederkehr@tu-dortmund.de}
+
+\cortext[cor1]{Corresponding author}
+
+\begin{abstract}
+  Abstract.
+\end{abstract}
+
+\begin{keywords}
+  keyword1 \sep keyword2 \sep keyword3 \sep keyword4
+\end{keywords}
+
+\maketitle
+
+%% Loading bibliography style file
+% \bibliographystyle{model1-num-names}
+% \bibliographystyle{cas-model2-names}
+% Loading bibliography database
+% \bibliography{bibliography.bib}
+
+\end{document}

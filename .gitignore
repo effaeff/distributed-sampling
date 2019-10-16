@@ -1,4 +1,3 @@
-.vscode/
 __pycache__/
 data/
 results*/
@@ -6,3 +5,19 @@ results*/
 *.npy
 *.tar
 *~
+*.aux
+*.bbl
+*.blg
+*.fdb_latexmk
+*.fls
+*.log
+*.spl
+*.synctex.gz
+main*.pdf
+*.abs
+*.out
+*.vscode/*
+*.csv
+*-converted-to.pdf
+*.thm
+*/.DS_Store
