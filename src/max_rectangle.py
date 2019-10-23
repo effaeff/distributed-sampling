@@ -81,10 +81,10 @@ def max_rectangle(data, cellsize):
                                 lower_rect[1] + 1
                             ]
                             local_points = lower.point_list_rects[lower_idx].copy()
-                            traceback_start = col - min(
+                            traceback_start = int(col - min(
                                 grid[row, col].dist_to_zero[0], lower_rect[0]
-                            ) + 1
-                            traceback_end = col + 1
+                            ) + 1)
+                            traceback_end = int(col + 1)
                             for traceback_idx in range(traceback_start, traceback_end):
                                 local_points += grid[row, traceback_idx].point_list.copy()
                             lowest_x = (col - local_rect[0] + 1) * cellsize
@@ -100,10 +100,10 @@ def max_rectangle(data, cellsize):
                                 min(grid[row, col].dist_to_zero[1], left_rect[1])
                             ]
                             local_points = left.point_list_rects[left_idx].copy()
-                            traceback_start = row - min(
+                            traceback_start = int(row - min(
                                 grid[row, col].dist_to_zero[1], left_rect[1]
-                            ) + 1
-                            traceback_end = row + 1
+                            ) + 1)
+                            traceback_end = int(row + 1)
                             for traceback_idx in range(traceback_start, traceback_end):
                                 local_points += grid[traceback_idx, col].point_list.copy()
                             lowest_y = (row - local_rect[1] + 1) * cellsize
