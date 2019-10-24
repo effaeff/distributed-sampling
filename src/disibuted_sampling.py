@@ -30,15 +30,15 @@ def distributed_sampling(data):
     end = time.time()
     print("Runtime: {} seconds".format(end - start))
 
-    plot_grid(grid_awesome, primitive=False)
+    # plot_grid(grid_awesome, primitive=False)
 
 def main():
     """Main Method"""
     random_seed = 1234
     random.seed(random_seed)
     test_size = 0.4
-    data_dir = 'W:/Projects/SFB876/Publications/Force_Model/Data/4_features'
-    # data_dir = 'C:/Data/Workspace/distributed_sampling/data'
+    # data_dir = 'W:/Projects/SFB876/Publications/Force_Model/Data/4_features'
+    data_dir = 'C:/Data/Workspace/distributed_sampling/data'
 
     filenames = [
         filename for filename in os.listdir(data_dir)

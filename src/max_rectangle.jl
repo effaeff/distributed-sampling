@@ -27,6 +27,56 @@ function show(io::IO, object::Cell)
     println(io, "$(object.dist_to_zero)\n$(object.max_rect)")
 end
 
+function find_lower_candidates(lower, lower_idx, grid, row, col, cellsize)
+    lower_rect = lower.rect_list[lower_idx]
+    local_rect = [
+        min(grid[row, col].dist_to_zero[1], lower_rect[1]),
+        lower_rect[2] + 1
+    ]
+    local_points = lower.point_list_rects[lower_idx]
+    traceback_start = col - min(
+        grid[row, col].dist_to_zero[1], lower_rect[1]
+    ) + 1
+    traceback_end = col
+    for traceback_idx in traceback_start:traceback_end
+        local_points = vcat(
+            local_points,
+            grid[row, traceback_idx].point_list
+        )
+    end
+    lowest_x = (col - local_rect[1]) * cellsize
+    local_points = [
+        local_points[idx] for idx in 1:size(local_points, 1)
+        if local_points[idx][1] > lowest_x
+    ]
+    return local_rect, local_points
+end
+
+function find_left_candidates(left, left_idx, grid, row, col, cellsize)
+    left_rect = left.rect_list[left_idx]
+    local_rect = [
+        left_rect[1] + 1,
+        min(grid[row, col].dist_to_zero[2], left_rect[2])
+    ]
+    local_points = left.point_list_rects[left_idx]
+    traceback_start = row - min(
+        grid[row, col].dist_to_zero[2], left_rect[2]
+    ) + 1
+    traceback_end = row
+    for traceback_idx in traceback_start:traceback_end
+        local_points = vcat(
+            local_points,
+            grid[traceback_idx, col].point_list
+        )
+    end
+    lowest_y = (row - local_rect[2]) * cellsize
+    local_points = [
+        local_points[idx] for idx in 1:size(local_points, 1)
+        if local_points[idx][2] > lowest_y
+    ]
+    return local_rect, local_points
+end
+
 function max_rectangle(data::Array{Float64, 2}, cellsize::Float64)
     nb_cells = convert(Int64, ceil(1 / cellsize))
     nb_rows = nb_cells
@@ -39,49 +89,6 @@ function max_rectangle(data::Array{Float64, 2}, cellsize::Float64)
         push!(grid[grid_y, grid_x].point_list, data[point_idx, :])
     end
 
-    #################################
-    ##### Draw samples and grid #####
-    #################################
-    # __, axs = plt.subplots(1)
-    # plt.scatter(data[:, 1], data[:, 2], s=1)
-    # for grid_y in 1:nb_rows
-    #     for grid_x in 1:nb_cols
-    #         origin_x = (grid_x - 1) * cellsize
-    #         origin_y = (grid_y - 1) * cellsize
-    #         isempty(grid[grid_y, grid_x].point_list) ? color = "g" : color = "r"
-    #             rect = patches.Rectangle(
-    #             (origin_x, origin_y),
-    #             cellsize,
-    #             cellsize,
-    #             linewidth=1,
-    #             edgecolor=color,
-    #             facecolor="none"
-    #         )
-    #         axs.add_patch(rect)
-    #         if grid_x == 1
-    #             axs.annotate(
-    #                 string(grid_y),
-    #                 (origin_x - cellsize / 2.0, origin_y + cellsize / 2.0),
-    #                 ha="center",
-    #                 va="center",
-    #                 fontsize=5
-    #             )
-    #         end
-    #         if grid_y == 1
-    #             axs.annotate(
-    #                 string(grid_x),
-    #                 (origin_x + cellsize / 2.0, origin_y - cellsize / 2.0),
-    #                 ha="center",
-    #                 va="center",
-    #                 fontsize=5
-    #             )
-    #         end
-    #     end
-    # end
-    # plt.savefig("grid.png", dpi=600)
-    # plt.close()
-    #################################
-
     global_max = 0
     progress = Progress(nb_cols * nb_cols, 1)
     for row in 1:nb_rows
@@ -92,31 +99,30 @@ function max_rectangle(data::Array{Float64, 2}, cellsize::Float64)
                     grid[row - 1 >= 1 ? row - 1 : 1, col].dist_to_zero[2] + 1
                 ]
                 if row == 1 || col == 1
-                    grid[row, col].max_rect = copy(grid[row, col].dist_to_zero)
-                    push!(grid[row, col].rect_list, copy(grid[row, col].dist_to_zero))
+                    grid[row, col].max_rect = grid[row, col].dist_to_zero
+                    push!(grid[row, col].rect_list, grid[row, col].dist_to_zero)
                     dist_to_zero = grid[row, col].dist_to_zero
-                    point_list = copy(grid[row, col].point_list)
+                    point_list = grid[row, col].point_list
                     if grid[row, col].dist_to_zero != [1, 1]
                         point_list = vcat(
                             point_list,
-                            copy(
-                                grid[
-                                    dist_to_zero[2] > 2 ? row - 1 : row,
-                                    dist_to_zero[1] > 2 ? col - 1 : col
-                                ].point_list_max_rect
-                            )
+                            grid[
+                                row - 1 > 0 ? row - 1 : row,
+                                col - 1 > 0 ? col - 1 : col
+                            ].point_list_max_rect
+                            
                         )
                     end
                     push!(grid[row, col].point_list_rects, point_list)
-                    grid[row, col].point_list_max_rect = copy(point_list)
+                    grid[row, col].point_list_max_rect = point_list
                 else
                     lower = grid[row - 1, col]
                     left = grid[row, col - 1]
                     if isempty(left.rect_list) && isempty(lower.rect_list)
                         grid[row, col].max_rect = [1, 1]
                         push!(grid[row, col].rect_list, [1, 1])
-                        push!(grid[row, col].point_list_rects, copy(grid[row, col].point_list))
-                        grid[row, col].point_list_max_rect = copy(grid[row, col].point_list)
+                        push!(grid[row, col].point_list_rects, grid[row, col].point_list)
+                        grid[row, col].point_list_max_rect = grid[row, col].point_list
                     else
                         max_rect = [0, 0]
                         point_list_max_rect = []
@@ -127,54 +133,17 @@ function max_rectangle(data::Array{Float64, 2}, cellsize::Float64)
                         )
                         rect_candidates_points = []
                         for lower_idx in 1:size(lower.rect_list, 1)
-                            lower_rect = lower.rect_list[lower_idx]
-                            local_rect = [
-                                min(grid[row, col].dist_to_zero[1], lower_rect[1]),
-                                lower_rect[2] + 1
-                            ]
-                            local_points = copy(lower.point_list_rects[lower_idx])
-                            traceback_start = col - min(
-                                grid[row, col].dist_to_zero[1], lower_rect[1]
-                            ) + 1
-                            traceback_end = col
-                            for traceback_idx in traceback_start:traceback_end
-                                local_points = vcat(
-                                    local_points,
-                                    copy(grid[row, traceback_idx].point_list)
-                                )
-                            end
-                            lowest_x = (col - local_rect[1] + 1) * cellsize
-                            local_points = [
-                                local_points[idx] for idx in 1:size(local_points, 1)
-                                if local_points[idx][1] > lowest_x
-                            ]
+                            local_rect, local_points = find_lower_candidates(
+                                lower, lower_idx, grid, row, col, cellsize
+                            )
                             push!(rect_candidates_points, local_points)
                             rect_candidates[lower_idx, :] = local_rect
                         end
                         for left_idx in 1:size(left.rect_list, 1)
-                            left_rect = left.rect_list[left_idx]
-                            local_rect = [
-                                left_rect[1] + 1,
-                                min(grid[row, col].dist_to_zero[2], left_rect[2])
-                            ]
-                            local_points = copy(left.point_list_rects[left_idx])
-                            traceback_start = row - min(
-                                grid[row, col].dist_to_zero[2], left_rect[2]
-                            ) + 1
-                            traceback_end = row
-                            for traceback_idx in traceback_start:traceback_end
-                                local_points = vcat(
-                                    local_points,
-                                    copy(grid[traceback_idx, col].point_list)
-                                )
-                            end
-                            lowest_y = (row - local_rect[2] + 1) * cellsize
-                            local_points = [
-                                local_points[idx] for idx in 1:size(local_points, 1)
-                                if local_points[idx][2] > lowest_y
-                            ]
+                            local_rect, local_points = find_left_candidates(
+                                left, left_idx, grid, row, col, cellsize
+                            )
                             push!(rect_candidates_points, local_points)
-
                             rect_candidates[length(lower.rect_list) + left_idx, :] = local_rect
                         end
                         for candidate_idx in 1:size(rect_candidates, 1)

@@ -12,6 +12,8 @@ model_selection = pyimport("sklearn.model_selection")
 neighbors = pyimport("sklearn.neighbors")
 preprocessing = pyimport("sklearn.preprocessing")
 
+plt = pyimport("matplotlib.pyplot")
+
 
 function distributed_sampling(data::Array{Float64, 2})
     println("Length of considered remaining data: $(size(data, 1))")
@@ -24,6 +26,7 @@ function distributed_sampling(data::Array{Float64, 2})
 
     @time grid = MaxRectangle.max_rectangle(data, cellsize)
     PlotGrid.plot_grid(grid, 1, 1, false)
+    PlotGrid.plot_rasterized_samples(data, grid, cellsize)
 end
 
 function main()
@@ -55,7 +58,6 @@ function main()
     data = scaler.fit_transform(data)
 
     distributed_sampling(data)
-
 end
 
 main()

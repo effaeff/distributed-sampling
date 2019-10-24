@@ -1,12 +1,56 @@
+"""Methods for grid plotting"""
 module PlotGrid
-export plot_grid
-"""Method for grid plotting"""
+export plot_grid, plot_rasterized_samples
 
 using PyCall
 
 plt = pyimport("matplotlib.pyplot")
 patches = pyimport("matplotlib.patches")
 
+
+function plot_rasterized_samples(data, grid, cellsize)
+    """
+    Method for plotting grid ontop of samples
+    """
+    __, axs = plt.subplots(1)
+    plt.scatter(data[:, 1], data[:, 2], s=0.5)
+    for grid_y in 1:size(grid, 1)
+        for grid_x in 1:size(grid, 2)
+            origin_x = (grid_x - 1) * cellsize
+            origin_y = (grid_y - 1) * cellsize
+            isempty(grid[grid_y, grid_x].point_list) ? color = "g" : color = "r"
+                rect = patches.Rectangle(
+                (origin_x, origin_y),
+                cellsize,
+                cellsize,
+                linewidth=1,
+                edgecolor=color,
+                facecolor="none"
+            )
+            axs.add_patch(rect)
+            if grid_x == 1
+                axs.annotate(
+                    string(grid_y),
+                    (origin_x - cellsize / 2.0, origin_y + cellsize / 2.0),
+                    ha="center",
+                    va="center",
+                    fontsize=5
+                )
+            end
+            if grid_y == 1
+                axs.annotate(
+                    string(grid_x),
+                    (origin_x + cellsize / 2.0, origin_y - cellsize / 2.0),
+                    ha="center",
+                    va="center",
+                    fontsize=5
+                )
+            end
+        end
+    end
+    plt.savefig("rasterized_samples.png", dpi=600)
+    plt.close()
+end
 
 function plot_grid(grid, width, height, primitive)
     """
@@ -58,7 +102,8 @@ function plot_grid(grid, width, height, primitive)
         labelleft=false
     )
     plt.tight_layout(pad=0)
-    plt.savefig("grid_full.png", dpi=600)
+    plt.savefig("grid.png", dpi=600)
+    plt.close()
 end
 
 end
