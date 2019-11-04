@@ -1,4 +1,5 @@
 [deps]
+BenchmarkTools = "6e4b80f9-dd63-53aa-95a3-0cdb28fa8baf"
 JSON = "682c06a0-de6a-54ab-a142-c8b1cf79cde6"
 MLDataPattern = "9920b226-0b2a-5f5f-9153-9aa70a013f8b"
 MLDataUtils = "cc2ba9b6-d476-5e6d-8eaf-a92d5412d41d"
@@ -7,3 +8,5 @@ ProgressBars = "49802e3a-d2f1-5c88-81d8-b72133a6f568"
 ProgressMeter = "92933f4c-e287-5a05-a399-4b506db050ca"
 PyCall = "438e738f-606a-5dbb-bf0a-cddfbfd45ab0"
 PyPlot = "d330b81b-6aea-500a-939a-2ce795aea3ee"
+StatsBase = "2913bbd2-ae8a-5f71-8c99-4fb6c76f3a91"
+Traceur = "37b6cedf-1f77-55f8-9503-c64b63398394"

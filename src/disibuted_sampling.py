@@ -13,6 +13,7 @@ from sklearn.neighbors import NearestNeighbors
 from max_rectangle import max_rectangle
 from plot_grid import plot_grid
 
+from matplotlib import pyplot as plt
 
 def distributed_sampling(data):
     """Method for the actual clustering algorithm"""
@@ -61,7 +62,10 @@ def main():
     features[:, :2] = scaler.fit_transform(features[:, :2])
     data = features[:, :2].copy()
 
-    distributed_sampling(data)
+    plt.scatter(data[:, 0], data[:, 1])
+    plt.savefig("test.png")
+
+    # distributed_sampling(data)
 
     ###################################
     ## Debug (currently not working) ##

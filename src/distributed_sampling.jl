@@ -24,7 +24,7 @@ function distributed_sampling(data::Array{Float64, 2})
     cell_radius = maximum(distances[:, 2])
     cellsize = cell_radius / sqrt(2) * 2
 
-    @time grid = MaxRectangle.max_rectangle(data, cellsize)
+    @time grid = MaxRectangle.max_rectangle(data, cellsize, 2);
     PlotGrid.plot_grid(grid, 1, 1, false)
     PlotGrid.plot_rasterized_samples(data, grid, cellsize)
 end
