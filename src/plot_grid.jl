@@ -13,7 +13,7 @@ function plot_rasterized_samples(data, grid, cellsize)
     Method for plotting grid ontop of samples
     """
     __, axs = plt.subplots(1)
-    plt.scatter(data[:, 1], data[:, 2], s=0.5)
+    plt.scatter(data[:, 1], data[:, 2], s=0.2)
     for grid_y in 1:size(grid, 1)
         for grid_x in 1:size(grid, 2)
             origin_x = (grid_x - 1) * cellsize

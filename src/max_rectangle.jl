@@ -28,40 +28,76 @@ function Base.show(io::IO, object::Cell)
 end
 
 function find_candidates(neighbors, grid, grid_idx, cellsize)
-    rect_candidates = Array{Int64}(
+    """
+    Routine to find candidates for the maximum rectangle for a cell
+    based on rectangles of neighboring cells.
+    """
+    rect_candidates = Array{Int64, 2}(
         undef,
         sum(neighbor->length(neighbor.rect_list), neighbors),
         length(neighbors)
     )
     rect_candidates_points = []
     candidate_idx = 1
-    for (dim, neighbor) in enumerate(neighbors)
+    # Neighbors correspond to neighboring dimensions in decreasing order,
+    # e.g. z, y, x in the three dimensional case.
+    for (i_neighbor, neighbor) in enumerate(neighbors)
+        # i_neighbor iterates grid indices
+        # dim iterates dimensions
+        dim = length(neighbors) - i_neighbor + 1
         for (rect_idx, rect) in enumerate(neighbor.rect_list)
+            # Construct candidate based on neighbor and current cell
             local_rect::Vector{Int64} = [
-                idx == dim ? rect[idx] + 1 : min(grid[grid_idx].dist_to_zero[idx], rect[idx])
-                for idx in 1:length(neighbors)
+                (
+                    i_dim == dim ?
+                    # At the dimension of the neighboring rectangle, the size just increments by 1
+                    rect[i_dim] + 1 :
+                    # Otherwise, we have to check how far the candidate can be spanned
+                    # in the direction of the corresponding dimension
+                    min(grid[grid_idx].dist_to_zero[i_dim], rect[i_dim])
+                )
+                # Dimensional iteration
+                for i_dim in 1:length(neighbors)
             ]
-
-            local_points = neighbor.point_list[rect_idx]
+            # Points of candidate include all points of the regarded neighboring rectangle
+            local_points = neighbor.point_list_rects[rect_idx]
+            # Starting index of traceback procedure to collect all additional points
             tb_start = CartesianIndex(
                 [
-                    idx == dim ? grid_idx[idx] : grid_idx[idx] - min(
-                        grid[grid_idx].dist_to_zero[idx], rect[idx] + 1
+                    (
+                        i_index == i_neighbor ?
+                        # At the neighboring index, the traceback index equals the grid index
+                        grid_idx[i_index] :
+                        # The other dimensions have to be iterated.
+                        # Starting from the grid index, we go back as far as possible,
+                        # limited by dist_to_zero and the neighboring rectangle
+                        grid_idx[i_index] - min(
+                            grid[grid_idx].dist_to_zero[length(neighbors) - i_index + 1],
+                            rect[length(neighbors) - i_index + 1]
+                        ) + 1
                     )
-                    for idx in 1:length(neighbors)
+                    # Grid index iteration
+                    for i_index in 1:length(neighbors)
                 ]...
             )
             local_points = vcat(
                 local_points,
-                [grid[tb_idx].point_list for tb_idx in tb_start:grid_idx]
+                [grid[tb_idx].point_list for tb_idx in tb_start:grid_idx]...
             )
 
             push!(rect_candidates_points, local_points)
-            rect_candidates[candidate_idx] = local_rect
+            rect_candidates[candidate_idx, :] = local_rect
             candidate_idx += 1
+        end
+    end
     return rect_candidates, rect_candidates_points
+end
 
 function max_rectangle(data::Array{Float64}, cellsize::Float64, dim::Int64)
+    """
+    Multidimensional implementation of algorithm to find the maximum rectangle in a grid.
+    The data is expected to be normalized.
+    """
     nb_cells = convert(Int64, ceil(1 / cellsize))
 
     # Build grid based on nb_cells and dim
@@ -138,7 +174,7 @@ function max_rectangle(data::Array{Float64}, cellsize::Float64, dim::Int64)
                         # Reduce the dimensional components of grid_idx by 1 one ofter the other
                         # to get neighboring cells. 
                         grid_idx - CartesianIndex(
-                            (neighbor_idx == dim_idx ? 1 : 0 for dim_idx in reverse(1:dim))...
+                            (neighbor_idx == dim_idx ? 1 : 0 for dim_idx in 1:dim)...
                         )
                     ]
                 end
@@ -152,11 +188,7 @@ function max_rectangle(data::Array{Float64}, cellsize::Float64, dim::Int64)
                 else
                     max_rect = [0 for __ in 1:dim]
                     point_list_max_rect = []
-                    rect_candidates = Array{Int64}(
-                        undef,
-                        sum(neighbor->length(neighbor.rect_list), neighboring_cells),
-                        dim
-                    )
+                    # Find all rectangle candidates using all neighboring cells
                     candidates, candidate_points = find_candidates(
                         neighboring_cells,
                         grid,
@@ -164,42 +196,52 @@ function max_rectangle(data::Array{Float64}, cellsize::Float64, dim::Int64)
                         cellsize
                     )
 
-
-                    for candidate_idx in 1:size(rect_candidates, 1)
-                        candidate = rect_candidates[candidate_idx, :]
+                    for candidate_idx in 1:size(candidates, 1)
+                        candidate = candidates[candidate_idx, :]
                         if prod(candidate) > prod(max_rect)
                             max_rect = candidate
-                            point_list_max_rect = rect_candidates_points[candidate_idx]
+                            point_list_max_rect = candidate_points[candidate_idx]
                         end
+                        # Only rectangles, which are not completely overlapped by other
+                        # rectangles should be remembered.
+                        # So the overlapping between the candidate and the rectangles of 
+                        # the current cell has to be checked.
                         (
-                            isempty(grid[row, col].rect_list) ?
+                            # If rect_list is empty, the candidate can be appended to it,
+                            # since it will be the only member.
+                            isempty(grid[grid_idx].rect_list) ?
                             append_rect = true :
                             append_rect = false
                         )
-                        for rect_idx in 1:size(grid[row, col].rect_list, 1)
-                            rect = grid[row, col].rect_list[rect_idx]
-                            if rect[1] >= candidate[1] && rect[2] >= candidate[2]
+                        for rect_idx in 1:size(grid[grid_idx].rect_list, 1)
+                            rect = grid[grid_idx].rect_list[rect_idx]
+                            # If a lager rectangle if found,
+                            # no other members of rect_list have to be checked
+                            if all(rect .>= candidate)
                                 append_rect = false
                                 break
-                            elseif rect[1] <= candidate[1] && rect[2] <= candidate[2]
-                                deleteat!(grid[row, col].rect_list, rect_idx)
-                                deleteat!(grid[row, col].point_list_rects, rect_idx)
+                            # If the candidate is larger than a member,
+                            # the member has to be removed from rect_list
+                            elseif all(rect .<= candidate)
+                                deleteat!(grid[grid_idx].rect_list, rect_idx)
+                                deleteat!(grid[grid_idx].point_list_rects, rect_idx)
                             end
                             append_rect = true
                         end
                         if append_rect
                             push!(
-                                grid[row, col].point_list_rects,
-                                rect_candidates_points[candidate_idx]
+                                grid[grid_idx].point_list_rects,
+                                candidate_points[candidate_idx]
                             )
-                            push!(grid[row, col].rect_list, candidate)
+                            push!(grid[grid_idx].rect_list, candidate)
                         end
                     end
-                    grid[row, col].max_rect = max_rect
-                    grid[row, col].point_list_max_rect = point_list_max_rect
+                    grid[grid_idx].max_rect = max_rect
+                    grid[grid_idx].point_list_max_rect = point_list_max_rect
                 end
             end
-            rect_size = prod(grid[row, col].max_rect)
+            # Adjust the global maximal product of rectangle components for the colorscale limit
+            rect_size = prod(grid[grid_idx].max_rect)
             if rect_size > global_max
                 global_max = rect_size
             end

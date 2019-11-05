@@ -15,7 +15,7 @@ preprocessing = pyimport("sklearn.preprocessing")
 plt = pyimport("matplotlib.pyplot")
 
 
-function distributed_sampling(data::Array{Float64, 2})
+function distributed_sampling(data::Array{Float64}, dim::Int64)
     println("Length of considered remaining data: $(size(data, 1))")
 
     nbrs = neighbors.NearestNeighbors(n_neighbors=2, algorithm="kd_tree", n_jobs=-1).fit(data)
@@ -24,7 +24,7 @@ function distributed_sampling(data::Array{Float64, 2})
     cell_radius = maximum(distances[:, 2])
     cellsize = cell_radius / sqrt(2) * 2
 
-    @time grid = MaxRectangle.max_rectangle(data, cellsize, 2);
+    @time grid = MaxRectangle.max_rectangle(data, cellsize, dim);
     PlotGrid.plot_grid(grid, 1, 1, false)
     PlotGrid.plot_rasterized_samples(data, grid, cellsize)
 end
@@ -56,8 +56,9 @@ function main()
 
     scaler = preprocessing.MinMaxScaler()
     data = scaler.fit_transform(data)
+    dim::Int64 = size(data, 2)
 
-    distributed_sampling(data)
+    distributed_sampling(data, dim)
 end
 
 main()
