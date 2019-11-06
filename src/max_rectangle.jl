@@ -112,7 +112,7 @@ function max_rectangle(data::Array{Float64}, cellsize::Float64, dim::Int64)
             [
                 convert(Int64, floor(data[point_idx, dim_idx] / cellsize)) + 1
                 for dim_idx in reverse(1:dim)
-            ]... # Unpack list components for usage as arguments for constructing CartesianIndex
+            ]... # Splat list components for usage as arguments for constructing CartesianIndex
         )
         push!(grid[grid_idx].point_list, data[point_idx, :])
     end
@@ -173,8 +173,11 @@ function max_rectangle(data::Array{Float64}, cellsize::Float64, dim::Int64)
                     neighboring_cells[neighbor_idx] = grid[
                         # Reduce the dimensional components of grid_idx by 1 one ofter the other
                         # to get neighboring cells. 
-                        grid_idx - CartesianIndex(
-                            (neighbor_idx == dim_idx ? 1 : 0 for dim_idx in 1:dim)...
+                        max(
+                            grid_idx - CartesianIndex(
+                                (neighbor_idx == dim_idx ? 1 : 0 for dim_idx in 1:dim)...
+                            ),
+                            CartesianIndex((1 for __ in 1:dim)...)
                         )
                     ]
                 end
@@ -213,6 +216,7 @@ function max_rectangle(data::Array{Float64}, cellsize::Float64, dim::Int64)
                             append_rect = true :
                             append_rect = false
                         )
+                        not_overlapped = ones(length(grid[grid_idx].rect_list))
                         for rect_idx in 1:size(grid[grid_idx].rect_list, 1)
                             rect = grid[grid_idx].rect_list[rect_idx]
                             # If a lager rectangle if found,
@@ -223,10 +227,16 @@ function max_rectangle(data::Array{Float64}, cellsize::Float64, dim::Int64)
                             # If the candidate is larger than a member,
                             # the member has to be removed from rect_list
                             elseif all(rect .<= candidate)
-                                deleteat!(grid[grid_idx].rect_list, rect_idx)
-                                deleteat!(grid[grid_idx].point_list_rects, rect_idx)
+                                not_overlapped[rect_idx] = 0
                             end
                             append_rect = true
+                        end
+                        if any(not_overlapped .!= 1)
+                            grid[grid_idx].rect_list = [
+                                grid[grid_idx].rect_list[rect_idx]
+                                for rect_idx in 1:size(not_overlapped, 1)
+                                if not_overlapped[rect_idx] == 1
+                            ]
                         end
                         if append_rect
                             push!(
