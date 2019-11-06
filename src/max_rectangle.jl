@@ -237,6 +237,11 @@ function max_rectangle(data::Array{Float64}, cellsize::Float64, dim::Int64)
                                 for rect_idx in 1:size(not_overlapped, 1)
                                 if not_overlapped[rect_idx] == 1
                             ]
+                            grid[grid_idx].point_list_rects = [
+                                grid[grid_idx].point_list_rects[rect_idx]
+                                for rect_idx in 1:size(not_overlapped, 1)
+                                if not_overlapped[rect_idx] == 1
+                            ]
                         end
                         if append_rect
                             push!(
