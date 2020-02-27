@@ -1,0 +1,1 @@
+Julia project for an algorithm to identify subsets of data sets. These subsets should have certain properties, i.e., a desired distribution while maximizing the number of observations assigned to the subsets. The regarded dataset can be of arbitrary dimension and distribution.
