@@ -163,7 +163,7 @@ function max_rectangle(data::Array{Float64}, cellsize::Float64, dim::Int64)
                 push!(grid[grid_idx].point_list_rects, point_list)
                 grid[grid_idx].point_list_max_rect = point_list
             else
-                # If there is more than one dimension differing from 1, the current cell is 
+                # If there is more than one dimension differing from 1, the current cell is
                 # surrounded by other cells.
                 # The max_rect of the current cell is estimated as a combination of a rect from
                 # the rect_list of non-overlapping rects of a neighboring cell
@@ -172,7 +172,7 @@ function max_rectangle(data::Array{Float64}, cellsize::Float64, dim::Int64)
                 for neighbor_idx in 1:dim
                     neighboring_cells[neighbor_idx] = grid[
                         # Reduce the dimensional components of grid_idx by 1 one ofter the other
-                        # to get neighboring cells. 
+                        # to get neighboring cells.
                         max(
                             grid_idx - CartesianIndex(
                                 (neighbor_idx == dim_idx ? 1 : 0 for dim_idx in 1:dim)...
@@ -207,7 +207,7 @@ function max_rectangle(data::Array{Float64}, cellsize::Float64, dim::Int64)
                         end
                         # Only rectangles, which are not completely overlapped by other
                         # rectangles should be remembered.
-                        # So the overlapping between the candidate and the rectangles of 
+                        # So the overlapping between the candidate and the rectangles of
                         # the current cell has to be checked.
                         (
                             # If rect_list is empty, the candidate can be appended to it,

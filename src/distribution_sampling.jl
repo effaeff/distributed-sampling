@@ -1,3 +1,8 @@
+import Pkg
+Pkg.activate(".")
+
+using Revise
+
 include("max_rectangle.jl")
 include("plot_grid.jl")
 using .MaxRectangle
@@ -32,8 +37,7 @@ end
 function main()
     random_seed::Int64 = 1234
     test_size::Float64 = 0.4
-    data_dir::String = "C:/Data/Workspace/distributed_sampling/data"
-    # data_dir::String = "W:/Projects/SFB876/Publications/Force_Model/Data/4_features"
+    data_dir::String = "/home/finkeldey/workspace/distributed-sampling-jl/data"
 
     filenames = filter(filename->occursin("_features.npy", filename), readdir(data_dir))
     train_files, val_files = model_selection.train_test_split(
