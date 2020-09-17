@@ -1,5 +1,6 @@
 [deps]
 BenchmarkTools = "6e4b80f9-dd63-53aa-95a3-0cdb28fa8baf"
+Conda = "8f4d0f93-b110-5947-807f-2305c1781a2d"
 JSON = "682c06a0-de6a-54ab-a142-c8b1cf79cde6"
 LanguageServer = "2b0e0bc5-e4fd-59b4-8912-456d1b03d8d7"
 MLDataPattern = "9920b226-0b2a-5f5f-9153-9aa70a013f8b"

@@ -39,6 +39,8 @@ function find_candidates(neighbors, grid, grid_idx, cellsize)
     )
     rect_candidates_points = []
     candidate_idx = 1
+
+    
     # Neighbors correspond to neighboring dimensions in decreasing order,
     # e.g. z, y, x in the three dimensional case.
     for (i_neighbor, neighbor) in enumerate(neighbors)

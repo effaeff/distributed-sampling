@@ -37,7 +37,7 @@ end
 function main()
     random_seed::Int64 = 1234
     test_size::Float64 = 0.4
-    data_dir::String = "/home/finkeldey/workspace/distributed-sampling-jl/data"
+    data_dir::String = "/home/finkeldey/workspace/distribution-sampling-jl/data/"
 
     filenames = filter(filename->occursin("_features.npy", filename), readdir(data_dir))
     train_files, val_files = model_selection.train_test_split(
@@ -50,6 +50,7 @@ function main()
         test_size=0.5,
         random_state=random_seed
     )
+    
 
     features::Array{Array{Float64, 2}} = []
     for (idx, __) in ProgressBar(enumerate(train_files))
